@@ -1,17 +1,26 @@
-import { Controller, Get, OnModuleInit } from '@nestjs/common';
-import { PrismaProductRepository } from '../adapters/prisma/prisma-product.repository';
+import { Controller, Get, Inject, OnModuleInit } from '@nestjs/common';
+import { GetProductsUseCase } from '../../application/use-cases/get-products.use-case';
+import { SeedProductsUseCase } from '../../application/use-cases/seed-products.use-case';
 
 @Controller('products')
 export class ProductController implements OnModuleInit {
-  constructor(private readonly productRepo: PrismaProductRepository) {}
+  constructor(
+    @Inject(GetProductsUseCase)
+    private readonly getProductsUseCase: GetProductsUseCase,
+    @Inject(SeedProductsUseCase)
+    private readonly seedProductsUseCase: SeedProductsUseCase,
+  ) {}
 
   async onModuleInit() {
-    await this.productRepo.seedInitialProduct();
+    await this.seedProductsUseCase.execute();
   }
 
   @Get()
   async getProducts() {
-    const products = await this.productRepo.findAll();
-    return { success: true, data: products };
+    const result = await this.getProductsUseCase.execute();
+    if (!result.isSuccess) {
+      return { success: false, error: result.error?.message ?? 'Unknown error' };
+    }
+    return { success: true, data: result.value };
   }
 }
