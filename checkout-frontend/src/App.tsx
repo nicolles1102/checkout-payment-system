@@ -1,122 +1,80 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import { useState } from 'react';
+import { Provider } from 'react-redux';
+import { store } from './store';
+import { Header } from './components/layout/Header';
+import { StepIndicator } from './components/ui/StepIndicator';
+import { ProductPage } from './pages/ProductPage';
+import { CheckoutPage } from './pages/CheckoutPage';
+import { SummaryPage } from './pages/SummaryPage';
+import { ResultPage } from './pages/ResultPage';
+import type { CheckoutStep } from './types';
 
-function App() {
-  const [count, setCount] = useState(0)
+function CheckoutFlow() {
+  const [currentStep, setCurrentStep] = useState<CheckoutStep>('product');
+
+  const handleNext = (step: CheckoutStep) => {
+    setCurrentStep(step);
+  };
+
+  const handleBack = (step: CheckoutStep) => {
+    setCurrentStep(step);
+  };
+
+  const handleRestart = () => {
+    setCurrentStep('product');
+  };
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
+    <div className="min-h-screen bg-gradient-to-b from-gray-950 via-purple-950/10 to-gray-950">
+      {/* Background effects */}
+      <div className="fixed inset-0 pointer-events-none">
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-purple-600/5 rounded-full blur-[128px]" />
+        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-indigo-600/5 rounded-full blur-[128px]" />
+      </div>
+
+      <Header />
+
+      {/* Step indicator - only show during flow */}
+      {currentStep !== 'result' && (
+        <div className="relative z-10">
+          <StepIndicator currentStep={currentStep} />
         </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
+      )}
+
+      <main className="relative z-10 max-w-7xl mx-auto">
+        {currentStep === 'product' && <ProductPage onNext={handleNext} />}
+        {currentStep === 'checkout' && (
+          <CheckoutPage onNext={handleNext} onBack={handleBack} />
+        )}
+        {currentStep === 'summary' && (
+          <SummaryPage onNext={handleNext} onBack={handleBack} />
+        )}
+        {currentStep === 'result' && <ResultPage onRestart={handleRestart} />}
+      </main>
+
+      {/* Footer */}
+      <footer className="relative z-10 border-t border-gray-800/30 mt-12">
+        <div className="max-w-7xl mx-auto px-4 py-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <p className="text-xs text-gray-600">
+            © 2026 Oso's Pet Boutique — Hecho con amor para Oso 🐻
           </p>
+          <div className="flex items-center gap-4 text-xs text-gray-600">
+            <span>Powered by Wompi</span>
+            <span>•</span>
+            <span>Sandbox</span>
+          </div>
         </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
-
-      <div className="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+      </footer>
+    </div>
+  );
 }
 
-export default App
+function App() {
+  return (
+    <Provider store={store}>
+      <CheckoutFlow />
+    </Provider>
+  );
+}
+
+export default App;
