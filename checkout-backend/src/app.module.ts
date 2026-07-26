@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { PrismaService } from './infrastructure/adapters/prisma/prisma.service';
 import { PrismaProductRepository } from './infrastructure/adapters/prisma/prisma-product.repository';
 import { PrismaCustomerRepository } from './infrastructure/adapters/prisma/prisma-customer.repository';
@@ -11,6 +11,7 @@ import { TransactionController } from './infrastructure/controllers/transaction.
 import { GetProductsUseCase } from './application/use-cases/get-products.use-case';
 import { SeedProductsUseCase } from './application/use-cases/seed-products.use-case';
 import { CreatePaymentUseCase } from './application/use-cases/create-payment.use-case';
+import { CheckTransactionStatusUseCase } from './application/use-cases/check-transaction-status.use-case';
 
 const PRODUCT_REPO = 'ProductRepository';
 const CUSTOMER_REPO = 'CustomerRepository';
@@ -46,8 +47,17 @@ const WOMPI_PORT = 'WompiPort';
         deliveryRepo: PrismaDeliveryRepository,
         transactionRepo: PrismaTransactionRepository,
         wompiPort: WompiAdapter,
-      ) => new CreatePaymentUseCase(productRepo, customerRepo, deliveryRepo, transactionRepo, wompiPort),
-      inject: [PRODUCT_REPO, CUSTOMER_REPO, DELIVERY_REPO, TRANSACTION_REPO, WOMPI_PORT],
+        configService: ConfigService,
+      ) => new CreatePaymentUseCase(productRepo, customerRepo, deliveryRepo, transactionRepo, wompiPort, configService),
+      inject: [PRODUCT_REPO, CUSTOMER_REPO, DELIVERY_REPO, TRANSACTION_REPO, WOMPI_PORT, ConfigService],
+    },
+    {
+      provide: CheckTransactionStatusUseCase,
+      useFactory: (
+        transactionRepo: PrismaTransactionRepository,
+        wompiPort: WompiAdapter,
+      ) => new CheckTransactionStatusUseCase(transactionRepo, wompiPort),
+      inject: [TRANSACTION_REPO, WOMPI_PORT],
     },
   ],
 })

@@ -1,11 +1,14 @@
 import { Controller, Post, Get, Param, Body, Inject } from '@nestjs/common';
 import { CreatePaymentUseCase } from '../../application/use-cases/create-payment.use-case';
+import { CheckTransactionStatusUseCase } from '../../application/use-cases/check-transaction-status.use-case';
 
 @Controller('transactions')
 export class TransactionController {
   constructor(
     @Inject(CreatePaymentUseCase)
     private readonly createPaymentUseCase: CreatePaymentUseCase,
+    @Inject(CheckTransactionStatusUseCase)
+    private readonly checkTransactionStatusUseCase: CheckTransactionStatusUseCase,
   ) {}
 
   @Post()
@@ -36,6 +39,10 @@ export class TransactionController {
 
   @Get(':id')
   async getTransaction(@Param('id') id: string) {
-    return { success: true, data: { id } };
+    const result = await this.checkTransactionStatusUseCase.execute(id);
+    if (!result.isSuccess) {
+      return { success: false, error: result.error?.message ?? 'Transaction not found' };
+    }
+    return { success: true, data: result.value };
   }
 }

@@ -1,8 +1,24 @@
-# 🛒 Checkout Payment System
+# 🐻 Oso's Pet Boutique — Checkout Payment System
 
 > Technical test — FullStack checkout system integrated with Wompi payment gateway.
 
-A full-stack application that simulates a **product purchase flow with credit card payment** using the Wompi sandbox API. The system follows a **5-step business process**: Product page → Credit Card/Delivery info → Summary → Final status → Product page with updated stock.
+**Oso's Pet Boutique** es una tienda especializada en **chaquetas para perritos y gaticos** 🐾. Esta aplicación simula el flujo completo de compra con pago con tarjeta de crédito a través de Wompi (sandbox).
+
+> 🐶 *"Oso" es mi perrito, la inspiración y la imagen principal de esta tienda.*
+
+El sistema sigue un **proceso de 5 pasos**: Página de producto → Información de tarjeta y envío → Resumen de pago → Estado final → Volver a producto con stock actualizado.
+
+---
+
+## 🎨 Identidad Visual
+
+| Atributo | Valor |
+|----------|-------|
+| **Nombre** | Oso's Pet Boutique |
+| **Mascota** | Oso 🐻 (perrito) |
+| **Producto** | Chaquetas para perros y gatos |
+| **Paleta de colores** | Morado/violeta elegante (`purple-600`, `indigo-900`) + tonos oscuros + blancos |
+| **Estilo** | Premium, moderno, mobile-first |
 
 ---
 
@@ -17,6 +33,7 @@ A full-stack application that simulates a **product purchase flow with credit ca
 - [Frontend](#frontend)
   - [Business Flow (5 Steps)](#business-flow-5-steps)
   - [State Management](#state-management)
+  - [Theme & Design](#theme--design)
 - [Getting Started](#getting-started)
   - [Prerequisites](#prerequisites)
   - [Backend Setup](#backend-setup)
@@ -72,7 +89,7 @@ The project follows **Hexagonal Architecture** (also known as *Ports & Adapters*
 ├─────────────────────────────────────────────────────────────────────┤
 │                        APPLICATION                                 │
 │  ┌──────────────────────────────────────────────────────────────┐  │
-│  │  Use Cases (business logic)     │  Common (Result<T,E>)    │  │
+│  │  Use Cases (business logic)     │  Common (Result<T,E>)     │  │
 │  └──────────────────────────────────────────────────────────────┘  │
 │                           │                                        │
 │                    (depends on port)                                │
@@ -101,26 +118,24 @@ checkout-payment-system/
 │   ├── generated/                 # Generated Prisma client
 │   └── src/
 │       ├── domain/                # 👑 Domain layer
-│       │   ├── entities/          #   Business entities (Product, Transaction, etc.)
+│       │   ├── entities/          #   Business entities
 │       │   └── ports/             #   Repository interfaces
 │       ├── application/           # ⚙️ Application layer
 │       │   ├── common/            #   Shared utilities (Result<T,E>)
 │       │   └── use-cases/         #   Business logic use cases
-│       ├── infrastructure/        # 🔌 Infrastructure layer (adapters)
+│       ├── infrastructure/        # 🔌 Infrastructure layer
 │       │   ├── adapters/
 │       │   │   ├── prisma/        #   Prisma service & repositories
 │       │   │   └── wompi/         #   Wompi API client
 │       │   └── controllers/       #   HTTP controllers
 │       ├── app.module.ts          # Root module
-│       ├── app.controller.ts      # Health check controller
-│       ├── app.service.ts         # Health check service
 │       └── main.ts                # Application entry point
 │
 ├── checkout-frontend/             # React SPA
 │   └── src/
-│       ├── components/            # Reusable UI components
+│       ├── components/            # UI components
 │       ├── pages/                 # Page-level components
-│       ├── store/                 # Redux store (state management)
+│       ├── store/                 # Redux store
 │       ├── services/              # API client services
 │       ├── App.tsx                # Root component
 │       └── main.tsx               # Entry point
@@ -182,30 +197,20 @@ erDiagram
     deliveries ||--o{ transactions : "has"
 ```
 
-### Schema Summary
-
-| Table | Description | Key Fields |
-|-------|-------------|------------|
-| `products` | Store items available for purchase | `id`, `name`, `description`, `price`, `stock`, `image_url` |
-| `customers` | Customer information collected during checkout | `id`, `email`, `full_name`, `phone_number` |
-| `deliveries` | Delivery address and status tracking | `id`, `address`, `city`, `region`, `postal_code`, `status` |
-| `transactions` | Payment transactions linked to Wompi | `id`, `amount`, `base_fee`, `delivery_fee`, `status`, `wompi_transaction_id` |
-
 ---
 
 ## 📡 API Endpoints
 
 | Method | Endpoint | Description | Status |
 |--------|----------|-------------|--------|
-| `GET` | `/` | Health check | ✅ Done |
-| `GET` | `/products` | List all available products | ✅ Done |
-| `GET` | `/products/:id` | Get product by ID | 🔜 Planned |
-| `POST` | `/transactions` | Create a new transaction | 🔜 Planned |
-| `GET` | `/transactions/:id` | Get transaction status | 🔜 Planned |
-| `POST` | `/transactions/:id/pay` | Process payment with Wompi | 🔜 Planned |
-| `POST` | `/customers` | Register customer info | 🔜 Planned |
-| `POST` | `/deliveries` | Create delivery record | 🔜 Planned |
-| `POST` | `/webhooks/wompi` | Wompi payment callback | 🔜 Planned |
+| `GET` | `/` | Health check | ✅ |
+| `GET` | `/products` | List all available products | ✅ |
+| `GET` | `/products/:id` | Get product by ID | 🔜 |
+| `POST` | `/transactions` | Create transaction & process payment | ✅ |
+| `GET` | `/transactions/:id` | Get transaction status | ✅ |
+| `POST` | `/customers` | Register customer info | 🔜 |
+| `POST` | `/deliveries` | Create delivery record | 🔜 |
+| `POST` | `/webhooks/wompi` | Wompi payment callback | 🔜 |
 
 > 📌 **Postman Collection:** [Link pendiente]  
 > 📌 **Swagger Documentation:** [Link pendiente]
@@ -216,20 +221,16 @@ erDiagram
 
 ### Business Flow (5 Steps)
 
-The app follows a strict **5-step screen process** as specified in the requirements:
-
 ```
 Step 1                    Step 2                    Step 3
 ┌─────────────┐          ┌─────────────┐          ┌─────────────┐
 │  Product    │  ─────►  │  Credit     │  ─────►  │  Summary    │
 │  Page       │          │  Card &     │          │  Payment    │
 │             │          │  Delivery   │          │             │
-│ • Show      │          │ • Credit    │          │ • Product   │
-│   product   │          │   card form │          │   amount    │
-│ • Stock     │          │ • Delivery  │          │ • Base fee  │
-│ • Price     │          │   info      │          │ • Delivery  │
-│ • "Pay"     │          │ • Valid-    │          │   fee       │
-│   button    │          │   ation     │          │ • Pay btn   │
+│ • Product   │          │ • Card form │          │ • Amount    │
+│ • Stock     │          │ • Address   │          │ • Base fee  │
+│ • Price     │          │ • Valid-    │          │ • Deliv fee │
+│ • "Pay"     │          │   ation     │          │ • Pay btn   │
 └─────────────┘          └─────────────┘          └─────────────┘
        ▲                                                  │
        │                                                  ▼
@@ -239,22 +240,28 @@ Step 1                    Step 2                    Step 3
        └── │  Page      │     (redirect after      │             │
           │  (updated)  │       completion)         │ • Success   │
           │  • Stock    │                           │   / Fail    │
-          │  • Units    │                           │ • Updated   │
-          └─────────────┘                           │   stock     │
+          └─────────────┘                           │ • Updated   │
                Step 5                              └─────────────┘
                                                        Step 4
 ```
 
+### Theme & Design
+
+- **Primary:** Violeta/Purple elegante (`purple-600`, `indigo-900`)
+- **Background:** Tonos oscuros y blancos para contraste premium
+- **Mobile-first:** Diseñado desde iPhone SE (750x1334) hacia arriba
+- **Tipografía:** Moderna y limpia
+- **Imagen principal:** Oso 🐻, el perrito mascota de la tienda
+
 ### State Management
 
-The application uses **Redux Toolkit** with **Flux Architecture** to manage state. The store includes:
+Redux Toolkit con slices:
+- **`productsSlice`** — Catálogo y stock
+- **`paymentSlice`** — Datos de tarjeta y estado
+- **`deliverySlice`** — Información de envío
+- **`transactionSlice`** — Estado de la transacción
 
-- **`productsSlice`** — Product catalog, stock tracking
-- **`paymentSlice`** — Credit card data, payment status
-- **`deliverySlice`** — Customer delivery information
-- **`transactionSlice`** — Current transaction state
-
-> State persistence is handled via `localStorage` to ensure the app **recovers progress** in case of a page refresh (resilience requirement).
+> Persistencia en `localStorage` para resiliencia ante refrescos de página.
 
 ---
 
@@ -264,8 +271,8 @@ The application uses **Redux Toolkit** with **Flux Architecture** to manage stat
 
 - **Node.js** >= 20.x
 - **npm** >= 10.x
-- **PostgreSQL** database (or a Supabase instance)
-- **Wompi Sandbox** account (keys provided in `.env`)
+- **PostgreSQL** database (Supabase)
+- **Wompi Sandbox** keys
 
 ### Backend Setup
 
@@ -276,29 +283,16 @@ cd checkout-backend
 # 2. Install dependencies
 npm install
 
-# 3. Configure environment variables
-#    Copy the .env template and fill in your values
-#    DATABASE_URL points to your PostgreSQL instance
-#    Wompi keys for sandbox environment
-#    
-#    Example .env:
-#    DATABASE_URL="postgresql://user:password@host:5432/db"
-#    PORT=3000
-#    WOMPI_PUBLIC_KEY="pub_stagtest_..."
-#    WOMPI_PRIVATE_KEY="prv_stagtest_..."
-#    WOMPI_EVENTS_KEY="stagtest_events_..."
-#    WOMPI_INTEGRITY_KEY="stagtest_integrity_..."
-#    WOMPI_BASE_URL="https://api-sandbox.co.uat.wompi.dev/v1"
+# 3. Configure environment (.env file)
+#    DATABASE_URL, PORT, WOMPI_* keys (see .env.example)
 
-# 4. Generate Prisma client & run migrations
+# 4. Generate Prisma client
 npx prisma generate
 npx prisma db push
 
 # 5. Start development server
 npm run start:dev
-
-# The server starts at http://localhost:3000
-# Products table is auto-seeded on first run
+# Server at http://localhost:3000
 ```
 
 ### Frontend Setup
@@ -312,30 +306,21 @@ npm install
 
 # 3. Start development server
 npm run dev
-
-# The app opens at http://localhost:5173
+# App at http://localhost:5173
 ```
 
 ---
 
 ## 🧪 Testing
 
-> ⚠️ Tests are currently being implemented.
-
-| Aspect | Tool | Coverage Target | Status |
-|--------|------|----------------|--------|
-| Backend Unit Tests | Jest | > 80% | 🔜 Planned |
-| Frontend Unit Tests | Jest / React Testing Library | > 80% | 🔜 Planned |
-| Backend E2E Tests | Jest + Supertest | Key flows | 🔜 Planned |
+> ⚠️ Tests being implemented (target: >80% coverage)
 
 ```bash
-# Run backend tests
+# Backend tests
 cd checkout-backend && npm test
+npm run test:cov
 
-# Run backend tests with coverage
-cd checkout-backend && npm run test:cov
-
-# Run frontend tests
+# Frontend tests
 cd checkout-frontend && npm test
 ```
 
@@ -343,50 +328,49 @@ cd checkout-frontend && npm test
 
 ## ☁ Deployment
 
-> ⚠️ Deployment is currently pending.
+> ⚠️ Deployment pending (AWS target)
 
-| Service | Proposed Provider | Resource |
-|---------|------------------|----------|
-| Backend API | AWS (ECS / Lambda) | REST API |
-| Frontend SPA | AWS (S3 + CloudFront) | Static site |
-| Database | Supabase (PostgreSQL) | Managed DB |
+| Service | Provider |
+|---------|----------|
+| Backend API | AWS (ECS / Lambda) |
+| Frontend SPA | AWS (S3 + CloudFront) |
+| Database | Supabase (PostgreSQL) |
 
 ---
 
-## 📊 Evaluation Rubric Coverage
+## 📊 Evaluation Rubric
 
 | Criteria | Points | Status |
 |----------|--------|--------|
-| README completed correctly | 5 | ✅ In progress |
-| Images that render fast & UI/UX boundaries | 5 | 🔜 Planned |
-| Full functionality of checkout process | 20 | 🔜 Planned |
-| API working correctly | 20 | ✅ In progress |
-| > 80% test coverage (Backend + Frontend) | 30 | 🔜 Planned |
-| App & API deployed to Cloud | 20 | 🔜 Planned |
+| README completed correctly | 5 | ✅ |
+| Images that render fast & UI/UX | 5 | 🔜 |
+| Full checkout functionality | 20 | 🔜 |
+| API working correctly | 20 | ✅ |
+| > 80% test coverage | 30 | 🔜 |
+| Cloud deployment | 20 | 🔜 |
 | **Total required** | **100** | **In progress** |
 
-### Bonus Points
+### Bonus
 
 | Criteria | Points | Status |
 |----------|--------|--------|
-| OWASP alignments, HTTPS, Security headers | 5 | 🔜 Planned |
-| Responsive cross-browser | 5 | 🔜 Planned |
-| CSS skills | 10 | 🔜 Planned |
-| Clean code | 10 | ✅ In progress |
-| Hexagonal Architecture | 10 | ✅ In progress |
-| Railway Oriented Programming | 10 | ✅ Structure ready |
+| OWASP / HTTPS / Security | 5 | 🔜 |
+| Responsive design | 5 | 🔜 |
+| CSS skills | 10 | 🔜 |
+| Clean code | 10 | ✅ |
+| Hexagonal Architecture | 10 | ✅ |
+| Railway Oriented Programming | 10 | ✅ |
 | **Total bonus** | **50** | |
 
 ---
 
 ## 🔗 Links
 
-- **GitHub Repository:** [https://github.com/nicolles1102/checkout-payment-system](https://github.com/nicolles1102/checkout-payment-system)
-- **Postman Collection:** [Link pendiente]
-- **Swagger Documentation:** [Link pendiente]
-- **Live API URL:** [Link pendiente]
-- **Live Frontend URL:** [Link pendiente]
+- **GitHub:** [https://github.com/nicolles1102/checkout-payment-system](https://github.com/nicolles1102/checkout-payment-system)
+- **Postman:** [Link pendiente]
+- **Live API:** [Link pendiente]
+- **Live App:** [Link pendiente]
 
 ---
 
-> Built with ❤️ for the Wompi FullStack technical test.
+> � Hecho con amor para Oso's Pet Boutique — Wompi FullStack Technical Test

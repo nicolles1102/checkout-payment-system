@@ -1,1 +1,80 @@
 @import "tailwindcss";
+
+/* Custom fonts */
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    @apply bg-gray-950 text-gray-100;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  }
+
+  ::selection {
+    @apply bg-purple-500/30 text-white;
+  }
+
+  /* Scrollbar styling */
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-gray-950;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-gray-800 rounded-full hover:bg-gray-700 transition-colors;
+  }
+
+  /* Custom animations */
+  @keyframes scaleIn {
+    from {
+      transform: scale(0);
+      opacity: 0;
+    }
+    to {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
+
+  @keyframes fadeInUp {
+    from {
+      transform: translateY(20px);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+
+  @keyframes float {
+    0%, 100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-10px);
+    }
+  }
+
+  .animate-fade-in-up {
+    animation: fadeInUp 0.6s ease-out;
+  }
+
+  .animate-float {
+    animation: float 3s ease-in-out infinite;
+  }
+}
+
+/* Input autofill override */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus {
+  -webkit-text-fill-color: white;
+  -webkit-box-shadow: 0 0 0px 1000px #111827 inset;
+  transition: background-color 5000s ease-in-out 0s;
+}
