@@ -54,7 +54,7 @@ export class PrismaProductRepository implements ProductRepositoryPort {
             'Chaqueta de textura suave estilo peluche, corte oversize con cierre frontal.',
           price: 150000,
           stock: 10,
-          image_url: '/images/oso-jacket.jpg',
+          image_url: 'https://vzyjmpcksfaueecagcay.supabase.co/storage/v1/object/public/product-images/oso-jacket.jpg',
         },
       });
     }
