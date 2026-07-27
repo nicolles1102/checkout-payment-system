@@ -11,6 +11,7 @@ import {
 import type { AppDispatch, RootState } from '../store';
 import { setProcessing, setPaymentError } from '../store/paymentSlice';
 import { createTransaction } from '../store/transactionSlice';
+import { selectCartItems, selectCartSubtotal, clearCart } from '../store/cartSlice';
 import { Button } from '../components/ui/Button';
 import type { CheckoutStep } from '../types';
 
@@ -21,7 +22,8 @@ interface SummaryPageProps {
 
 export function SummaryPage({ onNext, onBack }: SummaryPageProps) {
   const dispatch = useDispatch<AppDispatch>();
-  const { selectedProduct } = useSelector((state: RootState) => state.products);
+  const cartItems = useSelector(selectCartItems);
+  const cartSubtotal = useSelector(selectCartSubtotal);
   const { card, baseFee, deliveryFee, isProcessing } = useSelector(
     (state: RootState) => state.payment
   );
@@ -37,13 +39,16 @@ export function SummaryPage({ onNext, onBack }: SummaryPageProps) {
   };
 
   const handlePay = async () => {
-    if (!selectedProduct) return;
+    if (cartItems.length === 0) return;
 
     dispatch(setProcessing(true));
 
     const result = await dispatch(
       createTransaction({
-        product_id: selectedProduct.id,
+        items: cartItems.map((item) => ({
+          productId: item.product.id,
+          quantity: item.quantity,
+        })),
         customer,
         delivery,
         card,
@@ -54,6 +59,7 @@ export function SummaryPage({ onNext, onBack }: SummaryPageProps) {
     dispatch(setProcessing(false));
 
     if (createTransaction.fulfilled.match(result)) {
+      dispatch(clearCart());
       onNext('result');
     } else {
       dispatch(
@@ -84,39 +90,39 @@ export function SummaryPage({ onNext, onBack }: SummaryPageProps) {
           Revisa tu compra
         </h2>
         <p className="text-gray-500 text-sm">
-          Todo listo para procesar el pago de forma segura
+          Oso está preparando tu pedido con mucho amor 🐻
         </p>
       </div>
 
       {/* Order Summary Card */}
       <div className="rounded-2xl border border-gray-800/50 bg-gray-900/30 overflow-hidden">
-        {/* Product info */}
-        {selectedProduct && (
-          <div className="p-6 border-b border-gray-800/50">
-            <div className="flex items-center gap-4">
-              <div className="w-20 h-20 rounded-xl bg-gradient-to-br from-gray-800 to-gray-900 flex items-center justify-center overflow-hidden flex-shrink-0">
-                {selectedProduct.imageUrl ? (
+        {/* Product info - multiple items */}
+        <div className="p-6 border-b border-gray-800/50 space-y-4">
+          {cartItems.map((item) => (
+            <div key={item.product.id} className="flex items-center gap-4">
+              <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-gray-800 to-gray-900 flex items-center justify-center overflow-hidden flex-shrink-0">
+                {item.product.imageUrl ? (
                   <img
-                    src={selectedProduct.imageUrl}
-                    alt={selectedProduct.name}
+                    src={item.product.imageUrl}
+                    alt={item.product.name}
                     className="w-full h-full object-cover"
                   />
                 ) : (
-                  <PawPrint className="w-10 h-10 text-gray-700" />
+                  <PawPrint className="w-8 h-8 text-gray-700" />
                 )}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-lg font-bold text-white">
-                  {selectedProduct.name}
+                <p className="text-sm font-bold text-white truncate">
+                  {item.product.name}
                 </p>
-                <p className="text-sm text-gray-500">Cantidad: 1</p>
+                <p className="text-xs text-gray-500">Cantidad: {item.quantity}</p>
               </div>
-              <p className="text-xl font-bold text-purple-300">
-                ${selectedProduct.price.toLocaleString()}
+              <p className="text-sm font-bold text-purple-300">
+                ${(item.product.price * item.quantity).toLocaleString()}
               </p>
             </div>
-          </div>
-        )}
+          ))}
+        </div>
 
         {/* Customer info */}
         <div className="p-6 border-b border-gray-800/50 space-y-4">
@@ -183,8 +189,8 @@ export function SummaryPage({ onNext, onBack }: SummaryPageProps) {
           <h4 className="font-bold text-white">Resumen de precios</h4>
           <div className="space-y-2 text-sm">
             <div className="flex justify-between text-gray-400">
-              <span>Producto</span>
-              <span>${(selectedProduct?.price ?? 0).toLocaleString()}</span>
+              <span>Subtotal ({cartItems.reduce((a, i) => a + i.quantity, 0)} productos)</span>
+              <span>${cartSubtotal.toLocaleString()}</span>
             </div>
             <div className="flex justify-between text-gray-400">
               <span>Tarifa base</span>
@@ -198,7 +204,7 @@ export function SummaryPage({ onNext, onBack }: SummaryPageProps) {
           <div className="pt-4 border-t border-gray-800/50 flex justify-between items-center">
             <span className="text-gray-300 font-medium">Total a pagar</span>
             <span className="text-2xl font-bold bg-gradient-to-r from-purple-400 to-indigo-400 bg-clip-text text-transparent">
-              ${((selectedProduct?.price ?? 0) + baseFee + deliveryFee).toLocaleString()}
+              ${(cartSubtotal + baseFee + deliveryFee).toLocaleString()}
             </span>
           </div>
         </div>
@@ -237,7 +243,7 @@ export function SummaryPage({ onNext, onBack }: SummaryPageProps) {
       >
         {isProcessing
           ? 'Procesando pago...'
-          : `Pagar $${((selectedProduct?.price ?? 0) + baseFee + deliveryFee).toLocaleString()}`}
+          : `Pagar $${(cartSubtotal + baseFee + deliveryFee).toLocaleString()}`}
       </Button>
     </div>
   );

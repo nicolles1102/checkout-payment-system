@@ -2,17 +2,18 @@ import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { ShoppingBag, PawPrint } from 'lucide-react';
 import type { AppDispatch, RootState } from '../store';
-import { fetchProducts, setSelectedProduct } from '../store/productsSlice';
+import { fetchProducts } from '../store/productsSlice';
+import { selectCartItemCount, addToCart, openCart } from '../store/cartSlice';
 import { Button } from '../components/ui/Button';
 import type { Product, CheckoutStep } from '../types';
 
 interface ProductPageProps {
-  onNext: (step: CheckoutStep) => void;
+  onNext: (step: CheckoutStep, product?: Product) => void;
 }
 
 export function ProductPage({ onNext }: ProductPageProps) {
   const dispatch = useDispatch<AppDispatch>();
-  const { items, selectedProduct, loading, error } = useSelector(
+  const { items, loading, error } = useSelector(
     (state: RootState) => state.products
   );
 
@@ -22,14 +23,24 @@ export function ProductPage({ onNext }: ProductPageProps) {
     }
   }, [dispatch, items.length]);
 
-  const handleSelectProduct = (product: Product) => {
-    dispatch(setSelectedProduct(product));
+  const handleProductClick = (product: Product) => {
+    onNext('detail', product);
   };
 
-  const handleContinue = () => {
-    if (selectedProduct) {
-      onNext('checkout');
-    }
+  const handleQuickAdd = (e: React.MouseEvent, product: Product) => {
+    e.stopPropagation();
+    dispatch(addToCart({ product, quantity: 1 }));
+    dispatch(openCart());
+  };
+
+  const CartCountBadge = ({ productId }: { productId: string }) => {
+    const count = useSelector(selectCartItemCount(productId));
+    if (count === 0) return null;
+    return (
+      <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-purple-500 text-white text-[10px] font-bold flex items-center justify-center shadow-lg shadow-purple-500/30">
+        {count}
+      </span>
+    );
   };
 
   if (loading) {
@@ -37,7 +48,7 @@ export function ProductPage({ onNext }: ProductPageProps) {
       <div className="flex justify-center items-center py-32">
         <div className="flex flex-col items-center gap-4">
           <div className="w-12 h-12 border-4 border-purple-500/30 border-t-purple-500 rounded-full animate-spin" />
-          <p className="text-gray-500 text-sm">Cargando productos...</p>
+          <p className="text-gray-500 text-sm">Oso está buscando sus mejores chaquetas...</p>
         </div>
       </div>
     );
@@ -47,7 +58,7 @@ export function ProductPage({ onNext }: ProductPageProps) {
     return (
       <div className="flex justify-center items-center py-32">
         <div className="text-center space-y-4">
-          <p className="text-red-400">Error al cargar los productos</p>
+          <p className="text-red-400">Oso tuvo un problema... ¡intenta de nuevo!</p>
           <p className="text-gray-500 text-sm">{error}</p>
           <Button onClick={() => dispatch(fetchProducts())}>
             Intentar de nuevo
@@ -73,28 +84,24 @@ export function ProductPage({ onNext }: ProductPageProps) {
         </h2>
         <p className="text-gray-500 max-w-md mx-auto text-sm">
           Abriga a tu mejor amigo con estilo. Prendas premium diseñadas para
-          perritos y gaticos.
+          perritos y gaticos. ¡Elige las que más te gusten!
         </p>
       </div>
 
       {/* Products Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 px-4 max-w-5xl mx-auto">
         {items.map((product) => {
-          const isSelected = selectedProduct?.id === product.id;
           const outOfStock = product.stock <= 0;
 
           return (
-            <button
+            <div
               key={product.id}
-              onClick={() => !outOfStock && handleSelectProduct(product)}
-              disabled={outOfStock}
+              onClick={() => !outOfStock && handleProductClick(product)}
               className={`
-                group relative text-left rounded-2xl border transition-all duration-300 overflow-hidden
-                ${isSelected
-                  ? 'border-purple-500 bg-purple-500/5 shadow-xl shadow-purple-500/10 ring-2 ring-purple-500/30'
-                  : outOfStock
-                    ? 'border-gray-800/50 bg-gray-900/30 opacity-50 cursor-not-allowed'
-                    : 'border-gray-800/50 bg-gray-900/30 hover:border-gray-700 hover:bg-gray-900/50 hover:shadow-lg'
+                group relative rounded-2xl border transition-all duration-300 overflow-hidden cursor-pointer
+                ${outOfStock
+                  ? 'border-gray-800/50 bg-gray-900/30 opacity-50 cursor-not-allowed'
+                  : 'border-gray-800/50 bg-gray-900/30 hover:border-gray-700 hover:bg-gray-900/50 hover:shadow-lg'
                 }
               `}
             >
@@ -128,17 +135,6 @@ export function ProductPage({ onNext }: ProductPageProps) {
                     </span>
                   )}
                 </div>
-
-                {/* Selected overlay */}
-                {isSelected && (
-                  <div className="absolute top-3 left-3">
-                    <div className="w-8 h-8 rounded-full bg-purple-500 flex items-center justify-center shadow-lg">
-                      <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                      </svg>
-                    </div>
-                  </div>
-                )}
               </div>
 
               {/* Product Info */}
@@ -157,40 +153,26 @@ export function ProductPage({ onNext }: ProductPageProps) {
                     {product.stock} disp.
                   </span>
                 </div>
+
+                {/* Add to cart button */}
+                {!outOfStock && (
+                  <div className="pt-2">
+                    <Button
+                      onClick={(e: React.MouseEvent) => handleQuickAdd(e, product)}
+                      fullWidth
+                      size="sm"
+                      variant="secondary"
+                      icon={<ShoppingBag className="w-4 h-4" />}
+                    >
+                      Agregar
+                    </Button>
+                  </div>
+                )}
               </div>
-            </button>
+            </div>
           );
         })}
       </div>
-
-      {/* CTA */}
-      {selectedProduct && (
-        <div className="sticky bottom-0 px-4 pb-4">
-          <div className="max-w-5xl mx-auto">
-            <div className="rounded-2xl bg-gradient-to-r from-purple-600/20 via-indigo-600/10 to-purple-600/20 border border-purple-500/20 backdrop-blur-xl p-4 flex items-center justify-between gap-4">
-              <div className="hidden sm:block">
-                <p className="text-sm text-gray-400">Producto seleccionado</p>
-                <p className="font-bold text-white">{selectedProduct.name}</p>
-              </div>
-              <div className="flex items-center gap-4 sm:gap-8">
-                <div className="text-right">
-                  <p className="text-xs text-gray-500">Precio</p>
-                  <p className="font-bold text-lg text-purple-300">
-                    ${selectedProduct.price.toLocaleString()}
-                  </p>
-                </div>
-                <Button
-                  onClick={handleContinue}
-                  size="lg"
-                  icon={<ShoppingBag className="w-5 h-5" />}
-                >
-                  Comprar ahora
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

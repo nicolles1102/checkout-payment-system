@@ -1,8 +1,13 @@
-import { PawPrint } from 'lucide-react';
+import { PawPrint, ShoppingBag } from 'lucide-react';
+import { useDispatch, useSelector } from 'react-redux';
+import { selectCartCount, toggleCart } from '../../store/cartSlice';
 
 export function Header() {
+  const dispatch = useDispatch();
+  const cartCount = useSelector(selectCartCount);
+
   return (
-    <header className="relative z-10 border-b border-gray-800/50 bg-gradient-to-r from-gray-950 via-purple-950/30 to-gray-950 backdrop-blur-xl">
+    <header className="relative z-30 border-b border-gray-800/50 bg-gradient-to-r from-gray-950 via-purple-950/30 to-gray-950 backdrop-blur-xl">
       <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-purple-500/20">
@@ -16,9 +21,24 @@ export function Header() {
           </div>
         </div>
 
-        <div className="hidden sm:flex items-center gap-2 text-xs text-gray-500">
-          <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-          <span>Pago seguro</span>
+        <div className="flex items-center gap-4">
+          {/* Cart button */}
+          <button
+            onClick={() => dispatch(toggleCart())}
+            className="relative p-2 rounded-xl bg-gray-800/30 hover:bg-gray-800/50 border border-gray-800/30 transition-all"
+          >
+            <ShoppingBag className="w-5 h-5 text-gray-300" />
+            {cartCount > 0 && (
+              <span className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-purple-500 text-white text-xs font-bold flex items-center justify-center shadow-lg shadow-purple-500/30">
+                {cartCount > 99 ? '99+' : cartCount}
+              </span>
+            )}
+          </button>
+
+          <div className="hidden sm:flex items-center gap-2 text-xs text-gray-500">
+            <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+            <span>Pago seguro</span>
+          </div>
         </div>
       </div>
     </header>

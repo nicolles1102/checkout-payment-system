@@ -47,8 +47,13 @@ export interface Transaction {
   product?: Product;
 }
 
+export interface CartItem {
+  product: Product;
+  quantity: number;
+}
+
 export interface CreateTransactionPayload {
-  product_id: string;
+  items: { productId: string; quantity: number }[];
   customer: Customer;
   delivery: Delivery;
   card: CardInfo;
@@ -61,7 +66,7 @@ export interface TransactionResponse {
 }
 
 // === Checkout Flow Step ===
-export type CheckoutStep = 'product' | 'checkout' | 'summary' | 'result';
+export type CheckoutStep = 'product' | 'detail' | 'checkout' | 'summary' | 'result';
 
 // === Form State ===
 export interface CheckoutFormData {
