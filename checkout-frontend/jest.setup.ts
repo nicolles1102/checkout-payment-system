@@ -1,3 +1,5 @@
+import '@testing-library/jest-dom';
+
 // Mock Vite's import.meta.env for Jest tests
 // ts-jest with commonjs doesn't support import.meta.env
 // We expose env vars via globalThis.__ENV__ which api.ts reads first
