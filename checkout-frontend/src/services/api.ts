@@ -4,29 +4,7 @@ import type {
   TransactionResponse,
 } from '../types';
 
-// Compatible strategy to read env vars in both Vite (import.meta.env) and Jest (globalThis.__ENV__)
-function getEnv(): Record<string, string | undefined> {
-  // 1. Try globalThis.__ENV__ (set by jest.setup.ts for tests)
-  const globalEnv = (globalThis as Record<string, unknown>).__ENV__;
-  if (globalEnv && typeof globalEnv === 'object') {
-    return globalEnv as Record<string, string | undefined>;
-  }
-  // 2. Try import.meta.env (Vite / browser)
-  try {
-    // Using Function constructor to avoid TypeScript errors on import.meta
-    // eslint-disable-next-line @typescript-eslint/no-implied-eval
-    const viteEnv = new Function('return import.meta.env')();
-    if (viteEnv && typeof viteEnv === 'object') {
-      return viteEnv as Record<string, string | undefined>;
-    }
-  } catch {
-    // Not in Vite environment, fall through
-  }
-  return {};
-}
-
-const env = getEnv();
-const API_BASE = env.VITE_API_URL || 'http://localhost:3000';
+import { API_URL, WOMPI_PUBLIC_KEY, WOMPI_BASE_URL } from './env';
 
 interface ApiResponse<T> {
   success: boolean;
@@ -38,7 +16,7 @@ async function request<T>(
   endpoint: string,
   options?: RequestInit
 ): Promise<T> {
-  const res = await fetch(`${API_BASE}${endpoint}`, {
+  const res = await fetch(`${API_URL}${endpoint}`, {
     headers: {
       'Content-Type': 'application/json',
     },
@@ -58,10 +36,9 @@ async function request<T>(
 }
 
 function getWompiEnv(): { publicKey: string; baseUrl: string } {
-  const currentEnv = getEnv();
   return {
-    publicKey: currentEnv.VITE_WOMPI_PUBLIC_KEY || '',
-    baseUrl: currentEnv.VITE_WOMPI_BASE_URL || '',
+    publicKey: WOMPI_PUBLIC_KEY,
+    baseUrl: WOMPI_BASE_URL,
   };
 }
 
