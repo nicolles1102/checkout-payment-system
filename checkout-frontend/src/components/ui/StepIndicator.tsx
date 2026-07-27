@@ -20,13 +20,52 @@ export function StepIndicator({ currentStep }: StepIndicatorProps) {
 
   return (
     <div className="w-full px-4 py-6">
-      <div className="flex items-center justify-between max-w-2xl mx-auto">
+      {/* Mobile: compact dots + current step label */}
+      <div className="sm:hidden flex flex-col items-center gap-2">
+        <div className="flex items-center justify-center gap-3">
+          {steps.map((step, index) => {
+            const isCompleted = index < currentIndex;
+            const isCurrent = index === currentIndex;
+
+            return (
+              <div key={step.key} className="flex items-center gap-0">
+                <div
+                  className={`
+                    rounded-full transition-all duration-500 ease-out
+                    ${isCompleted
+                      ? 'w-3 h-3 bg-gradient-to-r from-purple-500 to-indigo-600 shadow-sm shadow-purple-500/30'
+                      : isCurrent
+                        ? 'w-3 h-3 bg-gradient-to-r from-purple-600 to-indigo-700 ring-2 ring-purple-500/30 scale-110'
+                        : 'w-2 h-2 bg-gray-700'
+                    }
+                  `}
+                />
+                {/* Mini connector dot for completed */}
+                {index < steps.length - 1 && (
+                  <div
+                    className={`
+                      w-6 h-0.5 rounded-full transition-all duration-500
+                      ${isCompleted ? 'bg-gradient-to-r from-purple-500 to-indigo-600' : 'bg-gray-800'}
+                    `}
+                  />
+                )}
+              </div>
+            );
+          })}
+        </div>
+        <span className="text-xs text-purple-300 font-medium">
+          {steps[currentIndex]?.label || ''}
+        </span>
+      </div>
+
+      {/* Desktop: full indicator with labels */}
+      <div className="hidden sm:flex items-center justify-between max-w-2xl mx-auto">
         {steps.map((step, index) => {
           const isCompleted = index < currentIndex;
           const isCurrent = index === currentIndex;
 
           return (
-            <div key={step.key} className="flex items-center flex-1">
+            <div key={step.key} className="flex items-center flex-1 min-w-0">
               {/* Step circle + label */}
               <div className="flex flex-col items-center relative">
                 <div
