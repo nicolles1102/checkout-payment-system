@@ -56,8 +56,9 @@ const WOMPI_PORT = 'WompiPort';
       useFactory: (
         transactionRepo: PrismaTransactionRepository,
         wompiPort: WompiAdapter,
-      ) => new CheckTransactionStatusUseCase(transactionRepo, wompiPort),
-      inject: [TRANSACTION_REPO, WOMPI_PORT],
+        productRepo: PrismaProductRepository,
+      ) => new CheckTransactionStatusUseCase(transactionRepo, wompiPort, productRepo),
+      inject: [TRANSACTION_REPO, WOMPI_PORT, PRODUCT_REPO],
     },
   ],
 })

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import {
   CreditCard,
@@ -18,6 +18,7 @@ import {
 import type { AppDispatch, RootState } from '../store';
 import { updateCardInfo } from '../store/paymentSlice';
 import { updateCustomer, updateDelivery, setAcceptTerms } from '../store/deliverySlice';
+import { selectCartItems, selectCartCount, selectCartSubtotal } from '../store/cartSlice';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import type { CheckoutStep } from '../types';
@@ -33,12 +34,22 @@ interface FormErrors {
 
 export function CheckoutPage({ onNext, onBack }: CheckoutPageProps) {
   const dispatch = useDispatch<AppDispatch>();
-  const { selectedProduct } = useSelector((state: RootState) => state.products);
-  const { card, baseFee, deliveryFee, totalAmount } = useSelector((state: RootState) => state.payment);
+  const cartItems = useSelector(selectCartItems);
+  const cartCount = useSelector(selectCartCount);
+  const cartSubtotal = useSelector(selectCartSubtotal);
+  const { card, baseFee, deliveryFee } = useSelector((state: RootState) => state.payment);
   const { customer, delivery, acceptTerms } = useSelector(
     (state: RootState) => state.delivery
   );
   const [errors, setErrors] = useState<FormErrors>({});
+
+  const cardType = useMemo(() => {
+    const clean = card.number.replace(/\s/g, '');
+    if (clean.startsWith('4')) return { name: 'Visa', color: 'text-blue-400' };
+    if (/^5[1-5]/.test(clean)) return { name: 'MasterCard', color: 'text-orange-400' };
+    if (/^3[4-7]/.test(clean)) return { name: 'Amex', color: 'text-cyan-400' };
+    return null;
+  }, [card.number]);
 
   const formatCardNumber = (value: string) => {
     const digits = value.replace(/\D/g, '').slice(0, 16);
@@ -278,7 +289,28 @@ export function CheckoutPage({ onNext, onBack }: CheckoutPageProps) {
                 value={card.number}
                 onChange={handleCardNumberChange}
                 error={errors.card_number}
-                icon={<CreditCard className="w-4 h-4" />}
+                icon={
+                  cardType ? (
+                    cardType.name === 'Visa' ? (
+                      <svg className="w-8 h-5" viewBox="0 0 50 32" fill="none">
+                        <rect width="50" height="32" rx="4" fill="#1A1F71"/>
+                        <text x="25" y="21" textAnchor="middle" fill="white" fontSize="16" fontFamily="system-ui" fontWeight="900" letterSpacing="1.5">VISA</text>
+                      </svg>
+                    ) : cardType.name === 'MasterCard' ? (
+                      <svg className="w-8 h-5" viewBox="0 0 50 32" fill="none">
+                        <circle cx="17" cy="16" r="10" fill="#EB001B"/>
+                        <circle cx="33" cy="16" r="10" fill="#F79E1B"/>
+                      </svg>
+                    ) : (
+                      <svg className="w-8 h-5" viewBox="0 0 50 32" fill="none">
+                        <rect width="50" height="32" rx="4" fill="#1A1F71"/>
+                        <text x="25" y="21" textAnchor="middle" fill="white" fontSize="11" fontFamily="system-ui" fontWeight="bold">AMEX</text>
+                      </svg>
+                    )
+                  ) : (
+                    <CreditCard className="w-4 h-4" />
+                  )
+                }
                 maxLength={19}
               />
               <Input
@@ -365,35 +397,35 @@ export function CheckoutPage({ onNext, onBack }: CheckoutPageProps) {
                 Resumen del pedido
               </h4>
 
-              {selectedProduct && (
-                <div className="flex items-center gap-4 pb-4 border-b border-gray-800/50">
-                  <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-gray-800 to-gray-900 flex items-center justify-center overflow-hidden flex-shrink-0">
-                    {selectedProduct.imageUrl ? (
-                      <img
-                        src={selectedProduct.imageUrl}
-                        alt={selectedProduct.name}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <PawPrint className="w-8 h-8 text-gray-700" />
-                    )}
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-sm font-medium text-white truncate">
-                      {selectedProduct.name}
-                    </p>
-                    <p className="text-xs text-gray-500">Cant: 1</p>
-                  </div>
-                  <p className="text-sm font-bold text-purple-300 ml-auto">
-                    ${selectedProduct.price.toLocaleString()}
-                  </p>
+              {cartItems.length > 0 ? (
+                <div className="space-y-3 pb-4 border-b border-gray-800/50">
+                  {cartItems.map((item) => (
+                    <div key={item.product.id} className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-gray-800 to-gray-900 flex items-center justify-center overflow-hidden flex-shrink-0">
+                        {item.product.imageUrl ? (
+                          <img src={item.product.imageUrl} alt={item.product.name} className="w-full h-full object-cover" />
+                        ) : (
+                          <PawPrint className="w-5 h-5 text-gray-700" />
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-medium text-white truncate">{item.product.name}</p>
+                        <p className="text-[10px] text-gray-500">Cant: {item.quantity}</p>
+                      </div>
+                      <p className="text-xs font-bold text-purple-300">${(item.product.price * item.quantity).toLocaleString()}</p>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="pb-4 border-b border-gray-800/50">
+                  <p className="text-sm text-gray-500 text-center py-4">No hay productos en el carrito</p>
                 </div>
               )}
 
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between text-gray-400">
-                  <span>Producto</span>
-                  <span>${(selectedProduct?.price ?? 0).toLocaleString()}</span>
+                  <span>Subtotal ({cartCount} productos)</span>
+                  <span>${cartSubtotal.toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between text-gray-400">
                   <span>Tarifa base</span>
@@ -408,7 +440,7 @@ export function CheckoutPage({ onNext, onBack }: CheckoutPageProps) {
               <div className="pt-4 border-t border-gray-800/50 flex justify-between items-center">
                 <span className="text-gray-300 font-medium">Total</span>
                 <span className="text-2xl font-bold bg-gradient-to-r from-purple-400 to-indigo-400 bg-clip-text text-transparent">
-                  ${((selectedProduct?.price ?? 0) + baseFee + deliveryFee).toLocaleString()}
+                  ${(cartSubtotal + baseFee + deliveryFee).toLocaleString()}
                 </span>
               </div>
             </div>

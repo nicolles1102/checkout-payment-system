@@ -13,7 +13,7 @@ import type { AppDispatch, RootState } from '../store';
 import { resetTransaction, pollTransactionStatus } from '../store/transactionSlice';
 import { resetPayment } from '../store/paymentSlice';
 import { resetDelivery } from '../store/deliverySlice';
-import { clearSelectedProduct } from '../store/productsSlice';
+import { fetchProducts } from '../store/productsSlice';
 import { Button } from '../components/ui/Button';
 
 interface ResultPageProps {
@@ -42,7 +42,7 @@ export function ResultPage({ onRestart }: ResultPageProps) {
     dispatch(resetTransaction());
     dispatch(resetPayment());
     dispatch(resetDelivery());
-    dispatch(clearSelectedProduct());
+    dispatch(fetchProducts()); // <-- FIX: Refresh stock from backend
     onRestart();
   };
 
@@ -56,10 +56,10 @@ export function ResultPage({ onRestart }: ResultPageProps) {
           </div>
           <div>
             <h3 className="text-xl font-bold text-white mb-2">
-              Procesando tu pago
+              Oso está verificando tu pago
             </h3>
             <p className="text-gray-500 text-sm">
-              Wompi está verificando la transacción...
+              Wompi está procesando la transacción...
             </p>
           </div>
         </div>
@@ -116,7 +116,7 @@ export function ResultPage({ onRestart }: ResultPageProps) {
           </h2>
           <p className="text-gray-500">
             {isApproved
-              ? '¡Gracias por tu compra! Oso recibirá su chaqueta muy pronto.'
+              ? '¡Oso te enviará tu paquete lo antes posible! 🐻✨'
               : isDeclined
                 ? 'La tarjeta no pudo ser procesada. Verifica los datos e intenta de nuevo.'
                 : isError
@@ -169,7 +169,7 @@ export function ResultPage({ onRestart }: ResultPageProps) {
             <div className="rounded-2xl bg-gradient-to-r from-green-500/10 to-emerald-600/10 border border-green-500/20 p-6 text-center space-y-3">
               <PawPrint className="w-8 h-8 text-green-400 mx-auto" />
               <p className="text-sm text-gray-400">
-                Oso está muy feliz con su nueva chaqueta 🐻✨
+                ¡Woof! Oso está muy feliz con su nueva chaqueta 🐻✨
               </p>
             </div>
             <Button

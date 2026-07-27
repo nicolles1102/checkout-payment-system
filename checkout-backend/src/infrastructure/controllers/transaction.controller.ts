@@ -15,7 +15,7 @@ export class TransactionController {
   async createTransaction(
     @Body()
     body: {
-      productId: string;
+      items: { productId: string; quantity: number }[];
       email: string;
       fullName: string;
       phoneNumber: string;

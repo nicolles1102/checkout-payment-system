@@ -55,7 +55,7 @@ export const api = {
   createTransaction: (payload: CreateTransactionPayload) => {
     // Map frontend payload to backend expected shape
     const backendPayload = {
-      productId: payload.product_id,
+      items: payload.items,
       email: payload.customer.email,
       fullName: payload.customer.full_name,
       phoneNumber: payload.customer.phone_number,
