@@ -96,7 +96,7 @@ export function ProductPage({ onNext }: ProductPageProps) {
               `}
             >
               {/* Product Image */}
-              <div className="aspect-[4/3] bg-gradient-to-br from-gray-800 to-gray-900 relative overflow-hidden">
+              <div className="aspect-square bg-gradient-to-br from-gray-800 to-gray-900 relative overflow-hidden">
                 {product.imageUrl ? (
                   <img
                     src={product.imageUrl}

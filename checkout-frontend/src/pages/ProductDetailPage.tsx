@@ -27,26 +27,24 @@ export function ProductDetailPage({ product, onBack }: ProductDetailPageProps) {
       {/* Back button */}
       <button
         onClick={() => onBack('product')}
-        className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors text-sm"
+        className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors text-sm mt-6"
       >
         <ArrowLeft className="w-4 h-4" />
         Volver a productos
       </button>
 
       {/* Product image */}
-      <div className="aspect-[16/9] rounded-2xl bg-gradient-to-br from-gray-800 to-gray-900 overflow-hidden border border-gray-800/50">
-        {product.imageUrl ? (
-          <img
-            src={product.imageUrl}
-            alt={product.name}
-            className="w-full h-full object-cover"
-          />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center">
-            <PawPrint className="w-24 h-24 text-gray-700" />
-          </div>
-        )}
-      </div>
+      {product.imageUrl ? (
+        <img
+          src={product.imageUrl}
+          alt={product.name}
+          className="w-full rounded-2xl border border-purple-500/20"
+        />
+      ) : (
+        <div className="w-full aspect-[3/4] rounded-2xl border border-purple-500/20 bg-gray-900 flex items-center justify-center">
+          <PawPrint className="w-24 h-24 text-gray-700" />
+        </div>
+      )}
 
       {/* Product info */}
       <div className="space-y-6">
