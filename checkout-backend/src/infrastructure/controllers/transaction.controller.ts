@@ -32,7 +32,7 @@ export class TransactionController {
   ) {
     const result = await this.createPaymentUseCase.execute(body);
     if (!result.isSuccess) {
-      return { success: false, error: result.error?.message ?? 'Payment failed' };
+      return { success: false, error: result.error?.message || 'Payment failed' };
     }
     return { success: true, data: result.value };
   }
@@ -41,7 +41,7 @@ export class TransactionController {
   async getTransaction(@Param('id') id: string) {
     const result = await this.checkTransactionStatusUseCase.execute(id);
     if (!result.isSuccess) {
-      return { success: false, error: result.error?.message ?? 'Transaction not found' };
+      return { success: false, error: result.error?.message || 'Transaction not found' };
     }
     return { success: true, data: result.value };
   }
