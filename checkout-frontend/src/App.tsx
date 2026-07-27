@@ -57,10 +57,10 @@ function CheckoutFlow() {
   return (
     <CartBackdrop onCheckout={handleCheckoutFromCart}>
       <div className="min-h-screen bg-gradient-to-b from-gray-950 via-purple-950/10 to-gray-950">
-        {/* Background effects */}
-        <div className="fixed inset-0 pointer-events-none">
-          <div className="absolute top-0 left-1/4 w-96 h-96 bg-purple-600/5 rounded-full blur-[128px]" />
-          <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-indigo-600/5 rounded-full blur-[128px]" />
+        {/* Background effects - clamped to prevent overflow */}
+        <div className="fixed inset-0 pointer-events-none overflow-hidden">
+          <div className="absolute top-0 -left-[20%] w-[150%] h-96 bg-purple-600/5 rounded-full blur-[128px]" />
+          <div className="absolute bottom-0 -right-[20%] w-[150%] h-96 bg-indigo-600/5 rounded-full blur-[128px]" />
         </div>
 
         <Header />
@@ -71,7 +71,7 @@ function CheckoutFlow() {
           </div>
         )}
 
-        <main className="relative z-10 max-w-7xl mx-auto">
+        <main className="relative z-10 max-w-7xl mx-auto overflow-x-hidden">
           {renderStep()}
         </main>
 

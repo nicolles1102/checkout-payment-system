@@ -132,7 +132,7 @@ export function SummaryPage({ onNext, onBack }: SummaryPageProps) {
               Datos del comprador
             </span>
           </div>
-          <div className="grid grid-cols-2 gap-4 text-sm ml-7">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm ml-0 sm:ml-7">
             <div>
               <p className="text-gray-500">Nombre</p>
               <p className="text-white">{customer.full_name}</p>
