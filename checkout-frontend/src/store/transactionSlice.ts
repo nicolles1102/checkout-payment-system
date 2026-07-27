@@ -47,7 +47,7 @@ export const pollTransactionStatus = createAsyncThunk<
   { rejectValue: string }
 >(
   'transaction/pollStatus',
-  async (id: string, { rejectWithValue }) => {
+  async (id: string) => {
     const startTime = Date.now();
 
     const poll = async (): Promise<TransactionResponse> => {

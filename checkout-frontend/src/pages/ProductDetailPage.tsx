@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { ArrowLeft, Plus, Minus, ShoppingBag, PawPrint } from 'lucide-react';
-import type { AppDispatch, RootState } from '../store';
+import type { AppDispatch } from '../store';
 import { addToCart, openCart } from '../store/cartSlice';
 import { Button } from '../components/ui/Button';
 import type { Product, CheckoutStep } from '../types';

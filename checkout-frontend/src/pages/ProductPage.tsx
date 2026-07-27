@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { ShoppingBag, PawPrint } from 'lucide-react';
 import type { AppDispatch, RootState } from '../store';
 import { fetchProducts } from '../store/productsSlice';
-import { selectCartItemCount, addToCart, openCart } from '../store/cartSlice';
+import { addToCart, openCart } from '../store/cartSlice';
 import { Button } from '../components/ui/Button';
 import type { Product, CheckoutStep } from '../types';
 
@@ -31,16 +31,6 @@ export function ProductPage({ onNext }: ProductPageProps) {
     e.stopPropagation();
     dispatch(addToCart({ product, quantity: 1 }));
     dispatch(openCart());
-  };
-
-  const CartCountBadge = ({ productId }: { productId: string }) => {
-    const count = useSelector(selectCartItemCount(productId));
-    if (count === 0) return null;
-    return (
-      <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-purple-500 text-white text-[10px] font-bold flex items-center justify-center shadow-lg shadow-purple-500/30">
-        {count}
-      </span>
-    );
   };
 
   if (loading) {
