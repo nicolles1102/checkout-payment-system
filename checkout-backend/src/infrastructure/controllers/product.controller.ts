@@ -19,7 +19,7 @@ export class ProductController implements OnModuleInit {
   async getProducts() {
     const result = await this.getProductsUseCase.execute();
     if (!result.isSuccess) {
-      return { success: false, error: result.error?.message ?? 'Unknown error' };
+      return { success: false, error: result.error?.message || 'Unknown error' };
     }
     return { success: true, data: result.value };
   }

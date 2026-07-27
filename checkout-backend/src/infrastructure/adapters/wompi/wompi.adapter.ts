@@ -54,7 +54,7 @@ export class WompiAdapter implements WompiPort {
         },
         acceptance_token: data.acceptanceToken,
       });
-      console.log('Wompi request body:', body);
+      
       const response = await fetch(`${this.baseUrl}/transactions`, {
         method: 'POST',
         headers: {
@@ -74,7 +74,6 @@ export class WompiAdapter implements WompiPort {
       }
 
       const result = await response.json();
-      console.log('Wompi API Response:', JSON.stringify(result, null, 2));
       const wompiStatus = result.data?.status ?? '';
       return {
         status: this.mapWompiStatus(wompiStatus),
@@ -108,7 +107,6 @@ export class WompiAdapter implements WompiPort {
       }
 
       const result = await response.json();
-      console.log('Wompi getTransaction response:', JSON.stringify(result, null, 2));
       const wompiStatus = result.data?.status ?? '';
       return {
         status: this.mapWompiStatus(wompiStatus),
