@@ -1,7 +1,7 @@
 import type { CheckoutStep } from '../../types';
 
 const steps: { key: CheckoutStep; label: string; number: number }[] = [
-  { key: 'product', label: 'Producto', number: 1 },
+  { key: 'product', label: 'Chaquetas', number: 1 },
   { key: 'checkout', label: 'Pago y Envío', number: 2 },
   { key: 'summary', label: 'Resumen', number: 3 },
   { key: 'result', label: 'Resultado', number: 4 },
