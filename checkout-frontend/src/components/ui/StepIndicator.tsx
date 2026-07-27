@@ -1,3 +1,4 @@
+import React from 'react';
 import type { CheckoutStep } from '../../types';
 
 const steps: { key: CheckoutStep; label: string; number: number }[] = [
@@ -19,69 +20,33 @@ export function StepIndicator({ currentStep }: StepIndicatorProps) {
   const currentIndex = getCurrentIndex();
 
   return (
-    <div className="w-full px-4 py-6">
-      {/* Mobile: compact dots + current step label */}
-      <div className="sm:hidden flex flex-col items-center gap-2">
-        <div className="flex items-center justify-center gap-3">
-          {steps.map((step, index) => {
-            const isCompleted = index < currentIndex;
-            const isCurrent = index === currentIndex;
-
-            return (
-              <div key={step.key} className="flex items-center gap-0">
-                <div
-                  className={`
-                    rounded-full transition-all duration-500 ease-out
-                    ${isCompleted
-                      ? 'w-3 h-3 bg-gradient-to-r from-purple-500 to-indigo-600 shadow-sm shadow-purple-500/30'
-                      : isCurrent
-                        ? 'w-3 h-3 bg-gradient-to-r from-purple-600 to-indigo-700 ring-2 ring-purple-500/30 scale-110'
-                        : 'w-2 h-2 bg-gray-700'
-                    }
-                  `}
-                />
-                {/* Mini connector dot for completed */}
-                {index < steps.length - 1 && (
-                  <div
-                    className={`
-                      w-6 h-0.5 rounded-full transition-all duration-500
-                      ${isCompleted ? 'bg-gradient-to-r from-purple-500 to-indigo-600' : 'bg-gray-800'}
-                    `}
-                  />
-                )}
-              </div>
-            );
-          })}
-        </div>
-        <span className="text-xs text-purple-300 font-medium">
-          {steps[currentIndex]?.label || ''}
-        </span>
-      </div>
-
-      {/* Desktop: full indicator with labels */}
-      <div className="hidden sm:flex items-center justify-between max-w-2xl mx-auto">
+    <div className="w-full px-3 sm:px-4 py-4 sm:py-6">
+      {/* Single unified layout that scales gracefully */}
+      <div className="flex items-start justify-center max-w-2xl mx-auto gap-0">
         {steps.map((step, index) => {
           const isCompleted = index < currentIndex;
           const isCurrent = index === currentIndex;
+          const circleKey = `circle-${step.key}`;
+          const connectorKey = `connector-${step.key}`;
 
           return (
-            <div key={step.key} className="flex items-center flex-1 min-w-0">
+            <React.Fragment key={step.key}>
               {/* Step circle + label */}
-              <div className="flex flex-col items-center relative">
+              <div className="flex flex-col items-center relative flex-shrink-0">
                 <div
                   className={`
-                    w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold
+                    w-8 sm:w-10 rounded-full flex items-center justify-center text-xs sm:text-sm font-bold aspect-square
                     transition-all duration-500 ease-out
                     ${isCompleted
                       ? 'bg-gradient-to-r from-purple-500 to-indigo-600 text-white shadow-lg shadow-purple-500/30'
                       : isCurrent
-                        ? 'bg-gradient-to-r from-purple-600 to-indigo-700 text-white scale-110 shadow-xl shadow-purple-600/40 ring-4 ring-purple-500/20'
+                        ? 'bg-gradient-to-r from-purple-600 to-indigo-700 text-white scale-110 shadow-xl shadow-purple-600/40 ring-2 sm:ring-4 ring-purple-500/20'
                         : 'bg-gray-800/50 text-gray-500 border border-gray-700'
                     }
                   `}
                 >
                   {isCompleted ? (
-                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                    <svg className="w-4 sm:w-5 h-4 sm:h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                     </svg>
                   ) : (
@@ -90,7 +55,7 @@ export function StepIndicator({ currentStep }: StepIndicatorProps) {
                 </div>
                 <span
                   className={`
-                    text-xs mt-2 whitespace-nowrap font-medium transition-colors duration-300
+                    text-[10px] leading-tight sm:text-xs mt-1 sm:mt-2 text-center font-medium transition-colors duration-300
                     ${isCurrent ? 'text-purple-300' : isCompleted ? 'text-gray-300' : 'text-gray-600'}
                   `}
                 >
@@ -100,16 +65,16 @@ export function StepIndicator({ currentStep }: StepIndicatorProps) {
 
               {/* Connector line */}
               {index < steps.length - 1 && (
-                <div className="flex-1 mx-4 mb-6">
+                <div className="w-6 sm:w-16 lg:w-24 mx-1 sm:mx-2 mb-4 sm:mb-6 self-center">
                   <div
                     className={`
-                      h-1 rounded-full transition-all duration-500
+                      h-0.5 sm:h-1 rounded-full transition-all duration-500
                       ${isCompleted ? 'bg-gradient-to-r from-purple-500 to-indigo-600' : 'bg-gray-800'}
                     `}
                   />
                 </div>
               )}
-            </div>
+            </React.Fragment>
           );
         })}
       </div>
