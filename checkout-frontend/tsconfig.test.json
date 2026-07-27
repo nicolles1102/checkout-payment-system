@@ -8,6 +8,7 @@
     "noUnusedParameters": false,
     "module": "commonjs",
     "moduleResolution": "node",
+    "ignoreDeprecations": "6.0",
     "esModuleInterop": true
   },
   "include": ["src"]
