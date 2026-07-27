@@ -72,7 +72,7 @@ export class CreatePaymentUseCase {
   }
 
   async execute(data: {
-    productId: string;
+    items: { productId: string; quantity: number }[];
     email: string;
     fullName: string;
     phoneNumber: string;
@@ -97,10 +97,17 @@ export class CreatePaymentUseCase {
     status: string;
   }, Error>> {
     try {
-      // 1. Validate product exists and has stock
-      const product = await this.productRepo.findById(data.productId);
-      if (!product) return Result.fail(new Error('Product not found'));
-      if (product.stock <= 0) return Result.fail(new Error('Product out of stock'));
+      // 1. Validate all products exist and have enough stock
+      const products = await Promise.all(
+        data.items.map(async (item) => {
+          const product = await this.productRepo.findById(item.productId);
+          if (!product) throw new Error(`Product ${item.productId} not found`);
+          if (product.stock < item.quantity) {
+            throw new Error(`Product "${product.name}" only has ${product.stock} units available, requested ${item.quantity}`);
+          }
+          return product;
+        }),
+      );
 
       // 2. Find or create customer
       let customer = await this.customerRepo.findByEmail(data.email);
@@ -120,25 +127,36 @@ export class CreatePaymentUseCase {
         postalCode: data.postalCode,
       });
 
-      // 4. Calculate totals
-      const amount = product.price;
-      const totalAmount = amount + BASE_FEE + DELIVERY_FEE;
+      // 4. Calculate totals (sum of price * quantity for each product)
+      const itemsWithPrice = products.map((product, index) => ({
+        product,
+        quantity: data.items[index].quantity,
+      }));
+      const subtotal = itemsWithPrice.reduce(
+        (acc, { product, quantity }) => acc + product.price * quantity,
+        0,
+      );
+      const totalAmount = subtotal + BASE_FEE + DELIVERY_FEE;
 
-      // 5. Create transaction in PENDING status
+      // 5. Create transaction in PENDING status with items
       const transaction = await this.transactionRepo.create({
         amount: totalAmount,
         baseFee: BASE_FEE,
         deliveryFee: DELIVERY_FEE,
-        productId: product.id,
+        productId: products[0].id, // keep first product as main reference
         customerId: customer.id,
         deliveryId: delivery.id,
+        items: itemsWithPrice.map(({ product, quantity }) => ({
+          productId: product.id,
+          quantity,
+          unitPrice: product.price,
+        })),
       });
 
       // 6. Get acceptance token from Wompi
       const acceptanceToken = await this.getAcceptanceToken();
 
       // 7. Tokenize card using Wompi tokenization API
-      // Strip spaces from card number (Wompi expects digits only)
       const cleanCardNumber = data.cardNumber.replace(/\s/g, '');
       const token = await this.tokenizeCard({
         cardNumber: cleanCardNumber,
@@ -160,13 +178,18 @@ export class CreatePaymentUseCase {
         customerPhoneNumber: data.phoneNumber,
       });
 
-      // 8. Update transaction with Wompi result
+      // 9. Update transaction with Wompi result
       const status = paymentResult.status === 'APPROVED' ? 'APPROVED' : paymentResult.status === 'DECLINED' ? 'DECLINED' : paymentResult.status === 'PENDING' ? 'PENDING' : 'ERROR';
       await this.transactionRepo.updateStatus(transaction.id, status, paymentResult.wompiTransactionId);
 
-      // 9. If approved, decrement stock
+      // 10. If immediately approved, decrement stock for each product
+      // (If status is PENDING, stock will be decremented later via polling in CheckTransactionStatusUseCase)
       if (status === 'APPROVED') {
-        await this.productRepo.updateStock(product.id, product.stock - 1);
+        await Promise.all(
+          itemsWithPrice.map(({ product, quantity }) =>
+            this.productRepo.updateStock(product.id, product.stock - quantity),
+          ),
+        );
       }
 
       return Result.ok({

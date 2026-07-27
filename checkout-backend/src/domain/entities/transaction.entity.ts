@@ -1,5 +1,11 @@
 export type TransactionStatus = 'PENDING' | 'APPROVED' | 'DECLINED' | 'ERROR';
 
+export interface TransactionItem {
+  productId: string;
+  quantity: number;
+  unitPrice: number;
+}
+
 export class Transaction {
   constructor(
     public readonly id: string,
@@ -11,6 +17,7 @@ export class Transaction {
     public readonly productId: string | null,
     public readonly customerId: string | null,
     public readonly deliveryId: string | null,
+    public readonly items: TransactionItem[],
     public readonly createdAt: Date | null,
   ) {}
 }

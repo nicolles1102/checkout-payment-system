@@ -1,11 +1,13 @@
 import { WompiPort } from '../../domain/ports/wompi.port';
 import { TransactionRepositoryPort } from '../../domain/ports/transaction.repository.port';
+import { ProductRepositoryPort } from '../../domain/ports/product.repository.port';
 import { Result } from '../common/result';
 
 export class CheckTransactionStatusUseCase {
   constructor(
     private readonly transactionRepo: TransactionRepositoryPort,
     private readonly wompiPort: WompiPort,
+    private readonly productRepo: ProductRepositoryPort,
   ) {}
 
   async execute(transactionId: string): Promise<Result<{
@@ -61,6 +63,17 @@ export class CheckTransactionStatusUseCase {
       const status = wompiResult.status;
       if (status !== 'PENDING') {
         await this.transactionRepo.updateStatus(transaction.id, status);
+      }
+
+      // If status changed from PENDING to APPROVED, decrement stock
+      if (status === 'APPROVED' && transaction.status === 'PENDING') {
+        // Load transaction items to know which products to decrement
+        for (const item of transaction.items) {
+          const product = await this.productRepo.findById(item.productId);
+          if (product) {
+            await this.productRepo.updateStock(product.id, product.stock - item.quantity);
+          }
+        }
       }
 
       return Result.ok({
