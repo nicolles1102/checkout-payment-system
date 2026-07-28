@@ -86,47 +86,54 @@ export function CartBackdrop({ children, onCheckout }: PropsWithChildren<CartBac
                 items.map((item) => (
                   <div
                     key={item.product.id}
-                    className="flex items-center gap-3 p-3 rounded-xl bg-gray-900/50 border border-gray-800/30"
+                    className="p-3 rounded-xl bg-gray-900/50 border border-gray-800/30"
                   >
-                    <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-gray-800 to-gray-900 flex items-center justify-center overflow-hidden flex-shrink-0">
-                      {item.product.imageUrl ? (
-                        <img
-                          src={item.product.imageUrl}
-                          alt={item.product.name}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <PawPrint className="w-6 h-6 text-gray-700" />
-                      )}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-white truncate">{item.product.name}</p>
-                      <p className="text-xs text-gray-500">${item.product.price.toLocaleString()} c/u</p>
-                    </div>
-                    <div className="flex items-center gap-1">
+                    {/* Row 1: image + name + delete (always horizontal) */}
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-gray-800 to-gray-900 flex items-center justify-center overflow-hidden flex-shrink-0">
+                        {item.product.imageUrl ? (
+                          <img
+                            src={item.product.imageUrl}
+                            alt={item.product.name}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <PawPrint className="w-6 h-6 text-gray-700" />
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-white truncate">{item.product.name}</p>
+                        <p className="text-xs text-gray-500">${item.product.price.toLocaleString()} c/u</p>
+                      </div>
                       <button
-                        onClick={() => dispatch(updateQuantity({ productId: item.product.id, quantity: item.quantity - 1 }))}
-                        className="w-7 h-7 rounded-lg bg-gray-800/50 flex items-center justify-center hover:bg-gray-700/50 text-gray-400 hover:text-white"
+                        onClick={() => dispatch(removeFromCart(item.product.id))}
+                        className="w-7 h-7 rounded-lg bg-red-500/10 flex items-center justify-center hover:bg-red-500/20 flex-shrink-0"
                       >
-                        <Minus className="w-3 h-3" />
-                      </button>
-                      <span className="w-8 text-center text-sm text-white font-medium">{item.quantity}</span>
-                      <button
-                        onClick={() => dispatch(updateQuantity({ productId: item.product.id, quantity: item.quantity + 1 }))}
-                        className="w-7 h-7 rounded-lg bg-gray-800/50 flex items-center justify-center hover:bg-gray-700/50 text-gray-400 hover:text-white"
-                      >
-                        <Plus className="w-3 h-3" />
+                        <Trash2 className="w-3.5 h-3.5 text-red-400" />
                       </button>
                     </div>
-                    <p className="text-sm font-bold text-purple-300 w-[70px] text-right">
-                      ${(item.product.price * item.quantity).toLocaleString()}
-                    </p>
-                    <button
-                      onClick={() => dispatch(removeFromCart(item.product.id))}
-                      className="w-7 h-7 rounded-lg bg-red-500/10 flex items-center justify-center hover:bg-red-500/20"
-                    >
-                      <Trash2 className="w-3.5 h-3.5 text-red-400" />
-                    </button>
+
+                    {/* Row 2: quantity controls + total (row on mobile, inline on sm+) */}
+                    <div className="flex items-center justify-between mt-5 sm:mt-3 sm:ml-0">
+                      <div className="flex items-center gap-1">
+                        <button
+                          onClick={() => dispatch(updateQuantity({ productId: item.product.id, quantity: item.quantity - 1 }))}
+                          className="w-7 h-7 rounded-lg bg-gray-800/50 flex items-center justify-center hover:bg-gray-700/50 text-gray-400 hover:text-white"
+                        >
+                          <Minus className="w-3 h-3" />
+                        </button>
+                        <span className="w-8 text-center text-sm text-white font-medium">{item.quantity}</span>
+                        <button
+                          onClick={() => dispatch(updateQuantity({ productId: item.product.id, quantity: item.quantity + 1 }))}
+                          className="w-7 h-7 rounded-lg bg-gray-800/50 flex items-center justify-center hover:bg-gray-700/50 text-gray-400 hover:text-white"
+                        >
+                          <Plus className="w-3 h-3" />
+                        </button>
+                      </div>
+                      <p className="text-sm font-bold text-purple-300">
+                        ${(item.product.price * item.quantity).toLocaleString()}
+                      </p>
+                    </div>
                   </div>
                 ))
               )}
